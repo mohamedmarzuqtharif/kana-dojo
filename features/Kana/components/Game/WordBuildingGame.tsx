@@ -621,9 +621,6 @@ const WordBuildingGame = ({
         }
         canCheck={canCheck}
         feedbackContent={wordData.answerChars.join('')}
-        actionLabel={
-          showContinue ? 'continue' : showTryAgain ? 'try again' : 'check'
-        }
         buttonRef={buttonRef}
         // secondaryAction={
         //   !showContinue &&

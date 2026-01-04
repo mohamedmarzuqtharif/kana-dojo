@@ -113,7 +113,7 @@ export const GameBottomBar = ({
               <CircleCheck className='h-8 w-8' />
             )}
             <span className=''>
-              {actionLabel || (showContinue ? 'continue' : 'check')}
+              {actionLabel || (showContinue ? 'next' : 'check')}
             </span>
           </ActionButton>
         </div>
