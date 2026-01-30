@@ -18,8 +18,10 @@ export default function translationGen(t: (key: string) => string) {
       ),
       content: (
         <>
-          <p className='text-secondary text-lg'>{t('description')}</p>
-          <p className='text-secondary text-lg'>{t('instructions')}</p>
+          <p className='text-lg text-(--secondary-color)'>{t('description')}</p>
+          <p className='text-lg text-(--secondary-color)'>
+            {t('instructions')}
+          </p>
           {/*         <p className='text-sm text-secondary'>
           Want to support an independent project built by the community, for the
           community, and help KanaDojo continue growing? Then please consider

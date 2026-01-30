@@ -11,13 +11,22 @@ const loadFacts = async (): Promise<string[]> => {
   if (factsCache) return factsCache;
   if (factsLoadingPromise) return factsLoadingPromise;
 
-  factsLoadingPromise = fetch('/api/facts')
-    .then(res => res.json())
-    .then((facts: string[]) => {
+  factsLoadingPromise = (async () => {
+    try {
+      const response = await fetch('/api/facts');
+      if (!response.ok) {
+        throw new Error(`Facts request failed: ${response.status}`);
+      }
+      const facts = (await response.json()) as unknown;
+      if (!Array.isArray(facts)) {
+        throw new Error('Facts payload is not an array');
+      }
       factsCache = facts;
-      factsLoadingPromise = null;
       return facts;
-    });
+    } finally {
+      factsLoadingPromise = null;
+    }
+  })();
 
   return factsLoadingPromise;
 };
@@ -35,6 +44,7 @@ const RandomFact = () => {
     const fetchRandomFact = async () => {
       try {
         const facts = await loadFacts();
+        if (!facts.length) return;
         const random = new Random();
         const randomIndex = random.integer(0, facts.length - 1);
         setFact(facts[randomIndex]);
