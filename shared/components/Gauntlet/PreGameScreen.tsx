@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
 import { Link, useRouter } from '@/core/i18n/routing';
@@ -76,23 +76,37 @@ export default function PreGameScreen({
     }
   };
 
-  const totalQuestions = itemsCount * repetitions;
-  const estimatedMinutes = Math.ceil((totalQuestions * 3) / 60);
+  const totalQuestions = useMemo(
+    () => itemsCount * repetitions,
+    [itemsCount, repetitions],
+  );
+  const estimatedMinutes = useMemo(
+    () => Math.ceil((totalQuestions * 3) / 60),
+    [totalQuestions],
+  );
 
-  const gameModes = [
-    {
-      id: 'Pick' as GauntletGameMode,
-      title: 'Pick',
-      description: 'Pick the correct answer from multiple options',
-      icon: MousePointerClick,
-    },
-    {
-      id: 'Type' as GauntletGameMode,
-      title: 'Type',
-      description: 'Type the correct answer',
-      icon: Keyboard,
-    },
-  ];
+  const selectedSetsLabel = useMemo(
+    () => (selectedSets.length > 0 ? selectedSets.join(', ') : 'None'),
+    [selectedSets],
+  );
+
+  const gameModes = useMemo(
+    () => [
+      {
+        id: 'Pick' as GauntletGameMode,
+        title: 'Pick',
+        description: 'Pick the correct answer from multiple options',
+        icon: MousePointerClick,
+      },
+      {
+        id: 'Type' as GauntletGameMode,
+        title: 'Type',
+        description: 'Type the correct answer',
+        icon: Keyboard,
+      },
+    ],
+    [],
+  );
 
   const handleDifficultyClick = useCallback(
     (diff: GauntletDifficulty) => {
@@ -132,7 +146,7 @@ export default function PreGameScreen({
                 Selected:
               </span>
               <span className='text-sm text-(--secondary-color)'>
-                {selectedSets.length > 0 ? selectedSets.join(', ') : 'None'}
+                {selectedSetsLabel}
               </span>
               <span className='text-xs text-(--secondary-color)'>
                 {itemsCount} characters × {repetitions} = {totalQuestions}{' '}

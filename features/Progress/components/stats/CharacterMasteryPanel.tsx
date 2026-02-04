@@ -121,35 +121,38 @@ export default function CharacterMasteryPanel({
 }: CharacterMasteryPanelProps) {
   const [contentFilter, setContentFilter] = useState<ContentFilter>('all');
 
-  const { filteredCharacters, topDifficult, topMastered, groupedByMastery } =
-    useMemo(() => {
-      const allCharacters = transformCharacterData(characterMastery);
+  const allCharacters = useMemo(
+    () => transformCharacterData(characterMastery),
+    [characterMastery],
+  );
 
-      const filtered =
-        contentFilter === 'all'
-          ? allCharacters
-          : allCharacters.filter(char => char.contentType === contentFilter);
+  const filteredCharacters = useMemo(() => {
+    if (contentFilter === 'all') return allCharacters;
+    return allCharacters.filter(char => char.contentType === contentFilter);
+  }, [allCharacters, contentFilter]);
 
-      const difficult = getTopCharacters(filtered, 5, 'difficult');
-      const mastered = getTopCharacters(filtered, 5, 'mastered');
+  const topDifficult = useMemo(
+    () => getTopCharacters(filteredCharacters, 5, 'difficult'),
+    [filteredCharacters],
+  );
+  const topMastered = useMemo(
+    () => getTopCharacters(filteredCharacters, 5, 'mastered'),
+    [filteredCharacters],
+  );
 
-      const grouped: Record<MasteryLevel, CharacterMasteryItem[]> = {
-        mastered: [],
-        learning: [],
-        'needs-practice': [],
-      };
+  const groupedByMastery = useMemo(() => {
+    const grouped: Record<MasteryLevel, CharacterMasteryItem[]> = {
+      mastered: [],
+      learning: [],
+      'needs-practice': [],
+    };
 
-      filtered.forEach(char => {
-        grouped[char.masteryLevel].push(char);
-      });
+    filteredCharacters.forEach(char => {
+      grouped[char.masteryLevel].push(char);
+    });
 
-      return {
-        filteredCharacters: filtered,
-        topDifficult: difficult,
-        topMastered: mastered,
-        groupedByMastery: grouped,
-      };
-    }, [characterMastery, contentFilter]);
+    return grouped;
+  }, [filteredCharacters]);
 
   const hasCharacters = filteredCharacters.length > 0;
 

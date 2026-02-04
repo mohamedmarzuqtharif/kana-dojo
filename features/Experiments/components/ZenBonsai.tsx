@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useClick, useCorrect } from '@/shared/hooks/useAudio';
 import { allKana } from '../data/kanaData';

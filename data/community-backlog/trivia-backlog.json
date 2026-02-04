@@ -328,7 +328,7 @@
       "Reversi"
     ],
     "correctIndex": 0,
-    "issued": false
+    "issued": true
   },
   {
     "id": 26,
@@ -341,7 +341,8 @@
       "Okonomiyaki"
     ],
     "correctIndex": 1,
-    "issued": false
+    "issued": false,
+    "completed": true
   },
   {
     "id": 27,
@@ -354,7 +355,8 @@
       "Oki"
     ],
     "correctIndex": 0,
-    "issued": false
+    "issued": false,
+    "completed": true
   },
   {
     "id": 28,
@@ -367,7 +369,7 @@
       "Hina Matsuri"
     ],
     "correctIndex": 1,
-    "issued": false
+    "issued": true
   },
   {
     "id": 29,
@@ -380,7 +382,7 @@
       "Sendai"
     ],
     "correctIndex": 0,
-    "issued": false
+    "issued": true
   },
   {
     "id": 30,
@@ -393,7 +395,7 @@
       "Kyogen"
     ],
     "correctIndex": 0,
-    "issued": false
+    "issued": true
   },
   {
     "id": 31,

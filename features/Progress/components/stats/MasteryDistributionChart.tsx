@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/shared/lib/utils';
 import type { MasteryDistribution } from '../../types/stats';
@@ -55,32 +56,44 @@ export default function MasteryDistributionChart({
 }: MasteryDistributionChartProps) {
   const { mastered, learning, needsPractice, total } = distribution;
 
-  const masteredPercent = calculatePercentage(mastered, total);
-  const learningPercent = calculatePercentage(learning, total);
-  const needsPracticePercent = calculatePercentage(needsPractice, total);
+  const masteredPercent = useMemo(
+    () => calculatePercentage(mastered, total),
+    [mastered, total],
+  );
+  const learningPercent = useMemo(
+    () => calculatePercentage(learning, total),
+    [learning, total],
+  );
+  const needsPracticePercent = useMemo(
+    () => calculatePercentage(needsPractice, total),
+    [needsPractice, total],
+  );
 
   const hasData = total > 0;
 
-  const segments = [
-    {
-      key: 'mastered',
-      value: mastered,
-      percent: masteredPercent,
-      config: MASTERY_CONFIG.mastered,
-    },
-    {
-      key: 'learning',
-      value: learning,
-      percent: learningPercent,
-      config: MASTERY_CONFIG.learning,
-    },
-    {
-      key: 'needsPractice',
-      value: needsPractice,
-      percent: needsPracticePercent,
-      config: MASTERY_CONFIG.needsPractice,
-    },
-  ];
+  const segments = useMemo(
+    () => [
+      {
+        key: 'mastered',
+        value: mastered,
+        percent: masteredPercent,
+        config: MASTERY_CONFIG.mastered,
+      },
+      {
+        key: 'learning',
+        value: learning,
+        percent: learningPercent,
+        config: MASTERY_CONFIG.learning,
+      },
+      {
+        key: 'needsPractice',
+        value: needsPractice,
+        percent: needsPracticePercent,
+        config: MASTERY_CONFIG.needsPractice,
+      },
+    ],
+    [learning, learningPercent, mastered, masteredPercent, needsPractice, needsPracticePercent],
+  );
 
   return (
     <motion.div

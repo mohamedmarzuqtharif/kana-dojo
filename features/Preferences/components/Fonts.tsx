@@ -6,21 +6,14 @@ import usePreferencesStore from '@/features/Preferences/store/usePreferencesStor
 import { buttonBorderStyles } from '@/shared/lib/styles';
 import fonts from '../data/fonts';
 import { isRecommendedFont } from '../data/recommendedFonts';
-import { Dice5, Star, Type } from 'lucide-react';
-import { Random } from 'random-js';
+import { Star, Type } from 'lucide-react';
 import CollapsibleSection from './CollapsibleSection';
-
-const random = new Random();
 
 const Fonts = () => {
   const { playClick } = useClick();
 
   const currentFont = usePreferencesStore(state => state.font);
   const setFont = usePreferencesStore(state => state.setFont);
-
-  const [randomFont, setRandomFont] = useState(
-    fonts.length > 0 ? fonts[random.integer(0, fonts.length - 1)] : null,
-  );
 
   // Separate fonts into recommended and other categories
   const { recommendedFonts, otherFonts } = useMemo(() => {

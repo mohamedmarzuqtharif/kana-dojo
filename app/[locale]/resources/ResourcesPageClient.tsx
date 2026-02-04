@@ -25,12 +25,14 @@ interface ResourcesPageClientProps {
   locale: string;
   initialResources: Resource[];
   categoriesWithCounts: CategoryWithCount[];
+  availableFilters?: FilterOptions;
 }
 
 export function ResourcesPageClient({
   locale,
   initialResources,
   categoriesWithCounts,
+  availableFilters,
 }: ResourcesPageClientProps) {
   const [filters, setFilters] = useState<ActiveFilters>(createEmptyFilters());
   const [selectedResource, setSelectedResource] = useState<Resource | null>(
@@ -47,7 +49,7 @@ export function ResourcesPageClient({
     return result;
   }, [initialResources, filters]);
 
-  const availableFilters: FilterOptions = useMemo(() => {
+  const computedFilters: FilterOptions = useMemo(() => {
     const difficulties = DIFFICULTY_LEVELS.map(level => ({
       value: level,
       count: initialResources.filter(r => r.difficulty === level).length,
@@ -63,6 +65,8 @@ export function ResourcesPageClient({
     }));
     return { difficulties, priceTypes, platforms };
   }, [initialResources]);
+
+  const filterOptions = availableFilters ?? computedFilters;
 
   const handleSearchChange = useCallback((search: string) => {
     setFilters(prev => ({ ...prev, search }));
@@ -141,7 +145,7 @@ export function ResourcesPageClient({
               <FilterPanel
                 filters={filters}
                 onFilterChange={handleFilterChange}
-                availableFilters={availableFilters}
+                availableFilters={filterOptions}
               />
             </div>
           </aside>

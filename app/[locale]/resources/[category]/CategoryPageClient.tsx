@@ -30,6 +30,7 @@ interface CategoryPageClientProps {
   category: Category;
   initialResources: Resource[];
   categoriesWithCounts: CategoryWithCount[];
+  availableFilters?: FilterOptions;
 }
 
 export function CategoryPageClient({
@@ -37,6 +38,7 @@ export function CategoryPageClient({
   category,
   initialResources,
   categoriesWithCounts,
+  availableFilters,
 }: CategoryPageClientProps) {
   // State
   const [filters, setFilters] = useState<ActiveFilters>(createEmptyFilters());
@@ -61,7 +63,7 @@ export function CategoryPageClient({
   }, [initialResources, filters]);
 
   // Calculate available filter options with counts
-  const availableFilters: FilterOptions = useMemo(() => {
+  const computedFilters: FilterOptions = useMemo(() => {
     const difficulties = DIFFICULTY_LEVELS.map(level => ({
       value: level,
       count: initialResources.filter(r => r.difficulty === level).length,
@@ -80,6 +82,8 @@ export function CategoryPageClient({
 
     return { difficulties, priceTypes, platforms };
   }, [initialResources]);
+
+  const filterOptions = availableFilters ?? computedFilters;
 
   // Handlers
   const handleSearchChange = useCallback((search: string) => {
@@ -160,7 +164,7 @@ export function CategoryPageClient({
             <FilterPanel
               filters={filters}
               onFilterChange={handleFilterChange}
-              availableFilters={availableFilters}
+              availableFilters={filterOptions}
             />
 
             {/* Related Categories for Internal Linking */}

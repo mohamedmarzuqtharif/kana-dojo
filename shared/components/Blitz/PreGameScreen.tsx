@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import {
   Timer,
   Target,
@@ -186,16 +187,20 @@ function SelectedLevelsCard({
   itemsCount: number;
   selectedSets?: string[];
 }) {
-  const formatCompact = () => {
-    if (!selectedSets || selectedSets.length === 0) {
+  const sortedSets = useMemo(() => {
+    if (!selectedSets || selectedSets.length === 0) return [];
+    return [...selectedSets].sort((a, b) => {
+      const numA = parseInt(a.replace(/\D/g, '')) || 0;
+      const numB = parseInt(b.replace(/\D/g, '')) || 0;
+      return numA - numB;
+    });
+  }, [selectedSets]);
+
+  const compactText = useMemo(() => {
+    if (sortedSets.length === 0) {
       return `${itemsCount} ${dojoLabel.toLowerCase()}`;
     }
-    return selectedSets
-      .sort((a, b) => {
-        const numA = parseInt(a.replace(/\D/g, '')) || 0;
-        const numB = parseInt(b.replace(/\D/g, '')) || 0;
-        return numA - numB;
-      })
+    return sortedSets
       .map(set =>
         set
           .replace('Set ', '')
@@ -203,18 +208,13 @@ function SelectedLevelsCard({
           .replace(/-group.*$/, ''),
       )
       .join(', ');
-  };
+  }, [dojoLabel, itemsCount, sortedSets]);
 
-  const formatFull = () => {
-    if (!selectedSets || selectedSets.length === 0) {
+  const fullText = useMemo(() => {
+    if (sortedSets.length === 0) {
       return `${itemsCount} ${dojoLabel.toLowerCase()}`;
     }
-    return selectedSets
-      .sort((a, b) => {
-        const numA = parseInt(a.replace(/\D/g, '')) || 0;
-        const numB = parseInt(b.replace(/\D/g, '')) || 0;
-        return numA - numB;
-      })
+    return sortedSets
       .map(set => {
         const cleaned = set.replace('Set ', '').replace('Level ', '');
         return dojoType === 'kana'
@@ -222,7 +222,7 @@ function SelectedLevelsCard({
           : `${cleaned.includes('-') ? 'Levels' : 'Level'} ${cleaned}`;
       })
       .join(', ');
-  };
+  }, [dojoLabel, dojoType, itemsCount, sortedSets]);
 
   return (
     <div className='rounded-lg bg-(--card-color) p-4 text-left'>
@@ -237,10 +237,10 @@ function SelectedLevelsCard({
           </span>
         </div>
         <span className='text-sm break-words text-(--secondary-color) md:hidden'>
-          {formatCompact()}
+          {compactText}
         </span>
         <span className='hidden text-sm break-words text-(--secondary-color) md:inline'>
-          {formatFull()}
+          {fullText}
         </span>
       </div>
     </div>

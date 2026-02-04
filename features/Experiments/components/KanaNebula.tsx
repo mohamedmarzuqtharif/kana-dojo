@@ -3,8 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useClick } from '@/shared/hooks/useAudio';
 import { allKana } from '../data/kanaData';
-import clsx from 'clsx';
-import { Telescope, Rocket, Sparkles } from 'lucide-react';
+import { Telescope, Rocket } from 'lucide-react';
 
 interface StarKana {
   id: number;

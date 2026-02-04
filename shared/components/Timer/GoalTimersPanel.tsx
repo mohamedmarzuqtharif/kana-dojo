@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Plus, X, Target, Clock, CheckCircle2, Save } from 'lucide-react';
 import clsx from 'clsx';
 import type { GoalTimer } from '@/shared/hooks/useGoalTimers';
@@ -97,10 +97,15 @@ export default function GoalTimersPanel({
   };
 
   // Get default templates for quick add
-  const defaultTemplates = templates.filter(t =>
-    settings.defaultTemplates.includes(t.id),
+  const defaultTemplates = useMemo(
+    () =>
+      templates.filter(t => settings.defaultTemplates.includes(t.id)),
+    [templates, settings.defaultTemplates],
   );
-  const customTemplates = templates.filter(t => t.category === 'custom');
+  const customTemplates = useMemo(
+    () => templates.filter(t => t.category === 'custom'),
+    [templates],
+  );
 
   return (
     <div

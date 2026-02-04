@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/shared/lib/utils';
@@ -109,39 +109,60 @@ export default function StatsPage({ className }: StatsPageProps) {
     setShowResetModal(false);
   };
 
-  const overviewStats = [
-    {
-      title: 'Total Sessions',
-      value: stats.totalSessions,
-      icon: <TrendingUp className='h-5 w-5' />,
-    },
-    {
-      title: 'Accuracy',
-      value: `${stats.overallAccuracy.toFixed(0)}%`,
-      subtitle: `${stats.totalCorrect}/${stats.totalCorrect + stats.totalIncorrect}`,
-      icon: <Target className='h-5 w-5' />,
-    },
-    {
-      title: 'Best Streak',
-      value: stats.bestStreak,
-      icon: <Trophy className='h-5 w-5' />,
-    },
-    {
-      title: 'Characters',
-      value: stats.uniqueCharactersLearned,
-      icon: <Users className='h-5 w-5' />,
-    },
-    {
-      title: 'Correct',
-      value: stats.totalCorrect,
-      icon: <CheckCircle className='h-5 w-5' />,
-    },
-    {
-      title: 'Incorrect',
-      value: stats.totalIncorrect,
-      icon: <XCircle className='h-5 w-5' />,
-    },
-  ];
+  const overviewStats = useMemo(
+    () => [
+      {
+        title: 'Total Sessions',
+        value: stats.totalSessions,
+        icon: <TrendingUp className='h-5 w-5' />,
+      },
+      {
+        title: 'Accuracy',
+        value: `${stats.overallAccuracy.toFixed(0)}%`,
+        subtitle: `${stats.totalCorrect}/${stats.totalCorrect + stats.totalIncorrect}`,
+        icon: <Target className='h-5 w-5' />,
+      },
+      {
+        title: 'Best Streak',
+        value: stats.bestStreak,
+        icon: <Trophy className='h-5 w-5' />,
+      },
+      {
+        title: 'Characters',
+        value: stats.uniqueCharactersLearned,
+        icon: <Users className='h-5 w-5' />,
+      },
+      {
+        title: 'Correct',
+        value: stats.totalCorrect,
+        icon: <CheckCircle className='h-5 w-5' />,
+      },
+      {
+        title: 'Incorrect',
+        value: stats.totalIncorrect,
+        icon: <XCircle className='h-5 w-5' />,
+      },
+    ],
+    [
+      stats.bestStreak,
+      stats.overallAccuracy,
+      stats.totalCorrect,
+      stats.totalIncorrect,
+      stats.totalSessions,
+      stats.uniqueCharactersLearned,
+    ],
+  );
+
+  const characterMasteryMap = useMemo(
+    () =>
+      Object.fromEntries(
+        stats.characterMastery.map(item => [
+          item.character,
+          { correct: item.correct, incorrect: item.incorrect },
+        ]),
+      ),
+    [stats.characterMastery],
+  );
 
   return (
     <div className={cn('space-y-8', className)}>
@@ -234,14 +255,7 @@ export default function StatsPage({ className }: StatsPageProps) {
 
             {/* Two-column layout for panels */}
             <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
-              <CharacterMasteryPanel
-                characterMastery={Object.fromEntries(
-                  stats.characterMastery.map(item => [
-                    item.character,
-                    { correct: item.correct, incorrect: item.incorrect },
-                  ]),
-                )}
-              />
+              <CharacterMasteryPanel characterMastery={characterMasteryMap} />
               <MasteryDistributionChart
                 distribution={stats.masteryDistribution}
               />

@@ -92,7 +92,7 @@ const LevelSetCards = <TLevel extends string, TItem>({
     Partial<Record<TLevel, { data: TItem[]; name: string; prevLength: number }>>
   >({});
 
-  const cumulativeCounts = (() => {
+  const cumulativeCounts = useMemo(() => {
     const counts = {} as Record<TLevel, number>;
     let cumulative = 0;
 
@@ -103,7 +103,7 @@ const LevelSetCards = <TLevel extends string, TItem>({
     }
 
     return counts;
-  })();
+  }, [getCollectionSize, itemsPerSet, levelOrder]);
 
   useEffect(() => {
     let isMounted = true;
@@ -246,7 +246,10 @@ const LevelSetCards = <TLevel extends string, TItem>({
     return () => observer.disconnect();
   }, [hasMoreRows, isLoadingMore, loadMoreRows]);
 
-  const hasProgressData = Object.keys(masteryByKey).length > 0;
+  const hasProgressData = useMemo(
+    () => Object.keys(masteryByKey).length > 0,
+    [masteryByKey],
+  );
 
   const handleToggleSet = (setName: string) => {
     const set = setsTemp.find(s => s.name === setName);
