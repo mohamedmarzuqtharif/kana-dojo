@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  getAnalyzeRateLimiter,
+  checkAnalyzeRateLimit,
   getClientIP,
   createRateLimitHeaders,
 } from '@/shared/lib/rateLimit';
+import { hasRedisConfig, redisGetJson, redisSetJson } from '@/shared/lib/redis';
 
 // Type for kuromoji token
 interface KuromojiToken {
@@ -160,8 +161,7 @@ function getPOSDetail(token: KuromojiToken): string {
 export async function POST(request: NextRequest) {
   // Rate limiting check - protect against abuse
   const clientIP = getClientIP(request);
-  const rateLimiter = getAnalyzeRateLimiter();
-  const rateLimitResult = rateLimiter.check(clientIP);
+  const rateLimitResult = await checkAnalyzeRateLimit(clientIP);
 
   if (!rateLimitResult.allowed) {
     const headers = createRateLimitHeaders(rateLimitResult);
@@ -206,6 +206,27 @@ export async function POST(request: NextRequest) {
     }
 
     // Check cache
+    if (hasRedisConfig()) {
+      try {
+        const redisCached = await redisGetJson<{
+          tokens: AnalyzedToken[];
+        }>(`analyze:${text}`);
+        if (redisCached) {
+          const rateLimitHeaders = createRateLimitHeaders(rateLimitResult);
+          const response = NextResponse.json({
+            tokens: redisCached.tokens,
+            cached: true,
+          });
+          rateLimitHeaders.forEach((value, key) => {
+            response.headers.set(key, value);
+          });
+          return response;
+        }
+      } catch {
+        // Fall back to in-memory cache
+      }
+    }
+
     const cached = analysisCache.get(text);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
       const rateLimitHeaders = createRateLimitHeaders(rateLimitResult);
@@ -235,6 +256,18 @@ export async function POST(request: NextRequest) {
     }));
 
     // Cache the result
+    if (hasRedisConfig()) {
+      try {
+        await redisSetJson(
+          `analyze:${text}`,
+          { tokens: analyzedTokens },
+          Math.ceil(CACHE_TTL / 1000),
+        );
+      } catch {
+        // Fall back to in-memory cache
+      }
+    }
+
     analysisCache.set(text, {
       tokens: analyzedTokens,
       timestamp: Date.now(),

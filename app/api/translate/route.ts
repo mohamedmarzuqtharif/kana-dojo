@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  getTranslateRateLimiter,
+  checkTranslateRateLimit,
   getClientIP,
   createRateLimitHeaders,
 } from '@/shared/lib/rateLimit';
+import { hasRedisConfig, redisGetJson, redisSetJson } from '@/shared/lib/redis';
 
 // Simple in-memory cache for translations (reduces API calls)
 const translationCache = new Map<
@@ -166,8 +167,7 @@ const ERROR_CODES = {
 export async function POST(request: NextRequest) {
   // Rate limiting check - protect against abuse
   const clientIP = getClientIP(request);
-  const rateLimiter = getTranslateRateLimiter();
-  const rateLimitResult = rateLimiter.check(clientIP);
+  const rateLimitResult = await checkTranslateRateLimit(clientIP);
 
   if (!rateLimitResult.allowed) {
     const headers = createRateLimitHeaders(rateLimitResult);
@@ -250,6 +250,31 @@ export async function POST(request: NextRequest) {
 
     // Check cache first to reduce API calls
     const cacheKey = getCacheKey(text.trim(), sourceLanguage, targetLanguage);
+    if (hasRedisConfig()) {
+      try {
+        const redisCached = await redisGetJson<{
+          translatedText: string;
+          romanization?: string;
+        }>(`translate:${cacheKey}`);
+        if (redisCached) {
+          cacheHits++;
+          const rateLimitHeaders = createRateLimitHeaders(rateLimitResult);
+          const response = NextResponse.json({
+            translatedText: redisCached.translatedText,
+            romanization: redisCached.romanization,
+            cached: true,
+          });
+          response.headers.set('Cache-Control', 'private, max-age=3600');
+          rateLimitHeaders.forEach((value, key) => {
+            response.headers.set(key, value);
+          });
+          return response;
+        }
+      } catch {
+        // Fall back to in-memory cache
+      }
+    }
+
     const cached = translationCache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
       cacheHits++;
@@ -353,6 +378,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Cache the result
+    if (hasRedisConfig()) {
+      try {
+        await redisSetJson(
+          `translate:${cacheKey}`,
+          {
+            translatedText: translation.translatedText,
+            romanization,
+          },
+          Math.ceil(CACHE_TTL / 1000),
+        );
+      } catch {
+        // Fall back to in-memory cache
+      }
+    }
+
     translationCache.set(cacheKey, {
       translatedText: translation.translatedText,
       romanization,
